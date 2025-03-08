@@ -28,7 +28,6 @@ const Chat = () => {
       if (foundSession) {
         setCurrentSession(foundSession);
       } else {
-        // Handle invalid session ID case
         setCurrentSession(null);
       }
     }

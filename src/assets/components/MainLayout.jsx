@@ -12,7 +12,7 @@ const MainLayout = () => {
   useEffect(() => {
     const savedSessions = JSON.parse(localStorage.getItem("chatSessions")) || [];
     setChatSessions(savedSessions);
-  }, []); y
+  }, []); 
 
   // Save sessions to localStorage
   useEffect(() => {
