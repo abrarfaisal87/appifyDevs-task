@@ -3,8 +3,7 @@ import { FaTrashAlt } from "react-icons/fa";
 import { useChatSessions } from "../../hooks/useChatSessions";
 
 const History = () => {
-  const { chatSessions, handleSessionSelect, handleDeleteChat } =
-    useChatSessions();
+  const { chatSessions, handleSessionSelect, handleDeleteChat } = useChatSessions();
 
   return (
     <div className="p-6 bg-slate-900 h-full">

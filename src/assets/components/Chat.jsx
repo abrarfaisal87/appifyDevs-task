@@ -5,36 +5,25 @@ import { sendMessage } from "../../api/apiClient";
 import { useChatSessions } from "../../hooks/useChatSessions";
 
 const Chat = () => {
-  const { 
-    chatSessions, 
-    activeSessionId,
-    handleSessionSelect,
-    handleNewChat 
-  } = useChatSessions();
-  
+  const { chatSessions, activeSessionId, handleSessionSelect, handleNewChat, handleUpdateSession } =
+    useChatSessions();
+
   const [currentSession, setCurrentSession] = useState(null);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!activeSessionId) {
-      if (chatSessions.length > 0) {
-        setCurrentSession(chatSessions[0]);
-      } else {
-        setCurrentSession(null);
-      }
-    } else {
+    // If there's an active session, find it in the chatSessions
+    if (activeSessionId) {
       const foundSession = chatSessions.find(s => s.id === activeSessionId);
-      if (foundSession) {
-        setCurrentSession(foundSession);
-      } else {
-        setCurrentSession(null);
-      }
+      setCurrentSession(foundSession || null);
     }
-  }, [activeSessionId, chatSessions]);
+  }, [activeSessionId, chatSessions]); // Add chatSessions to dependencies
 
+
+  // scrolling to top effect
   useEffect(() => {
-    const chatContainer = document.getElementById('chat-container');
+    const chatContainer = document.getElementById("chat-container");
     if (chatContainer) {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
@@ -44,53 +33,51 @@ const Chat = () => {
     e.preventDefault();
     if (!message.trim()) return;
 
-   
     if (!currentSession) {
       const newSession = {
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
-        messages: []
+        messages: [],
       };
       handleNewChat(newSession);
       setCurrentSession(newSession);
     }
 
     setIsLoading(true);
-    const newUserMessage = { 
-      role: "user", 
+    const newUserMessage = {
+      role: "user",
       content: message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     try {
-     
       const updatedSession = currentSession
         ? {
             ...currentSession,
-            messages: [...currentSession.messages, newUserMessage]
+            messages: [...currentSession.messages, newUserMessage],
           }
         : {
             id: Date.now().toString(),
             createdAt: new Date().toISOString(),
-            messages: [newUserMessage]
+            messages: [newUserMessage],
           };
 
       // Get AI response
       const aiResponse = await sendMessage(updatedSession.messages, message);
-      const newAssistantMessage = { 
-        role: "assistant", 
+      const newAssistantMessage = {
+        role: "assistant",
         content: aiResponse,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       const updatedSessionWithAI = {
         ...updatedSession,
-        messages: [...updatedSession.messages, newAssistantMessage]
+        messages: [...updatedSession.messages, newAssistantMessage],
       };
-
+      
+      handleUpdateSession(updatedSessionWithAI);
       setCurrentSession(updatedSessionWithAI);
       handleSessionSelect(updatedSessionWithAI.id);
-
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -120,11 +107,15 @@ const Chat = () => {
       <div
         id="chat-container"
         className={`flex-1 overflow-y-auto p-6 space-y-4 transition-all duration-300 ${
-          (!currentSession || currentSession.messages.length === 0) ? "opacity-0" : "opacity-100"
+          !currentSession || currentSession.messages.length === 0
+            ? "opacity-0"
+            : "opacity-100"
         }`}
         style={{
           maxHeight: `calc(100vh - ${
-            (!currentSession || currentSession.messages.length === 0) ? "160px" : "85px"
+            !currentSession || currentSession.messages.length === 0
+              ? "160px"
+              : "85px"
           })`,
         }}
       >
